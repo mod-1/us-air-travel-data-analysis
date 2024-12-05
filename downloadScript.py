@@ -5,8 +5,11 @@ import os
 # URL to the flight data page
 url = "https://www.transtats.bts.gov/DL_SelectFields.aspx?gnoyr_VQ=FKM&QO_fu146_anzr=Nv4%20Pn44vr4%20Sv0n0pvny"
 
+
+folderName=input("What should be the name of folder? ")
+
 # Directory to save downloaded files
-DOWNLOAD_DIR = "flight_data"
+DOWNLOAD_DIR = f"flight_data/{folderName}"
 os.makedirs(DOWNLOAD_DIR, exist_ok=True)
 
 def fetch_form_data(session, url):
@@ -33,16 +36,17 @@ def download_data(session, year, form_data):
         "cboGeography": "All",
         "cboYear": str(year),
         "cboPeriod": "All",
+        "chkAllVars":"on",
         "btnDownload": "Download",
-        "PASSENGERS": "on",
-        "UNIQUE_CARRIER": "on",
-        "UNIQUE_CARRIER_NAME": "on",
-        "ORIGIN_AIRPORT_ID": "on",
-        "ORIGIN": "on",
-        "DEST_AIRPORT_ID": "on",
-        "DEST": "on",
-        "AIRCRAFT_TYPE": "on",
-        "MONTH": "on",
+        # "PASSENGERS": "on",
+        # "UNIQUE_CARRIER": "on",
+        # "UNIQUE_CARRIER_NAME": "on",
+        # "ORIGIN_AIRPORT_ID": "on",
+        # "ORIGIN": "on",
+        # "DEST_AIRPORT_ID": "on",
+        # "DEST": "on",
+        # "AIRCRAFT_TYPE": "on",
+        # "MONTH": "on",
     })
 
     response = session.post(url, data=form_data, stream=True)
@@ -64,7 +68,7 @@ def main():
         form_data = fetch_form_data(session, url)
         
         # Download data for each year
-        for year in range(2000, 2025):
+        for year in range(2000, 2024):
             print(f"Downloading data for year {year}...")
             try:
                 download_data(session, year, form_data)
