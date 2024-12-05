@@ -1,7 +1,7 @@
 // downloader of flight data - run this in the console 
 
 (async function() {
-    const url = "https://www.transtats.bts.gov/DL_SelectFields.aspx?gnoyr_VQ=GEE&QO_fu146_anzr=Nv4+Pn44vr45";
+    const url = "https://www.transtats.bts.gov/DL_SelectFields.aspx?gnoyr_VQ=FKM&QO_fu146_anzr=Nv4%20Pn44vr4%20Sv0n0pvny";
 
     const viewstate = document.querySelector("#__VIEWSTATE").value;
     const viewstategenerator = document.querySelector("#__VIEWSTATEGENERATOR").value;
