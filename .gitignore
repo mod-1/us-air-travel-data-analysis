@@ -166,3 +166,4 @@ cython_debug/
 *.csv
 *.zip
 /data
+flight_data/
