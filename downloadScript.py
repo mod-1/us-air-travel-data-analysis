@@ -3,10 +3,12 @@ from bs4 import BeautifulSoup
 import os
 
 # URL to the flight data page
-url = "https://www.transtats.bts.gov/DL_SelectFields.aspx?gnoyr_VQ=FKM&QO_fu146_anzr=Nv4%20Pn44vr4%20Sv0n0pvny"
-
+financial_data_url = "https://www.transtats.bts.gov/DL_SelectFields.aspx?gnoyr_VQ=FKM&QO_fu146_anzr=Nv4%20Pn44vr4%20Sv0n0pvny"
+market_data_url = "https://www.transtats.bts.gov/DL_SelectFields.aspx?gnoyr_VQ=FIL&QO_fu146_anzr=Nv4%20Pn44vr45"
 
 folderName=input("What should be the name of folder? ")
+data_type = input("What data do you want to download? Enter 1 for Financial Data and 2 for Market Data: ")
+url = market_data_url if data_type == "2" else financial_data_url
 
 # Directory to save downloaded files
 DOWNLOAD_DIR = f"flight_data/{folderName}"
