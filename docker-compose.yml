@@ -38,28 +38,14 @@ services:
   mongodb:
     image: mongo:latest
     container_name: mongodb
+    env_file:
+      - .env
     ports:
       - "27017:27017"
     networks:
       - spark-network
     volumes:
-      - mongo-data:/data/db
-
-  mongo-express:
-    image: mongo-express:latest
-    container_name: mongo-express
-    depends_on:
-      - mongodb
-    environment:
-      - ME_CONFIG_MONGODB_SERVER=mongodb
-      - ME_CONFIG_MONGODB_PORT=27017
-    ports:
-      - "8081:8081"
-    networks:
-      - spark-network
-
-volumes:
-  mongo-data:
+      - ./data/db:/data/db
 
 networks:
   spark-network:
