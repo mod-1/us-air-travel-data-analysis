@@ -47,6 +47,22 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
       MONGO_INITDB_DATABASE: ${MONGO_DB_NAME}
     restart: always
+  nodejs:
+    build: ./backend
+    container_name: nodejs-app
+    working_dir: /usr/src/app
+    volumes:
+      - ./backend/:/usr/src/app  # Mount the current directory to the container
+    ports:
+      - "3000:3000"  # Expose the Node.js app on port 3000
+    environment:
+      - NODE_ENV=development  # Set the environment to development
+      - MONGO_URI=mongodb://mongo:27017/${MONGO_DB_NAME}
+    command: ["npm", "run", "dev"]  # Use nodemon or any other development script
+    depends_on:
+      - mongodb  # Optional, if you have a database service like MongoDB
+    networks:
+      - spark-network
 
 networks:
   spark-network:
