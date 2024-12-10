@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const CleanPassengerInfo = require('../models/CleanPassengerInfo');
 const EmployeeData = require('../models/EmployeeData');
+const { default: mongoose } = require('mongoose');
 
 // Middleware to validate query parameters
 router.use((req, res, next) => {
@@ -32,7 +33,7 @@ router.get('/employee', async (req, res) => {
 
     try {
         // First aggregation query for passenger data
-        const passengerResults = await CleanPassengerInfo.aggregate([
+        await CleanPassengerInfo.aggregate([
             {
                 // Filter records within the specified date range
                 $match: {
@@ -70,18 +71,62 @@ router.get('/employee', async (req, res) => {
                     _id: 0,
                     YEAR: "$_id.YEAR",
                     MONTH: "$_id.MONTH",
-                    STATE: state,
+                    [stateField]: state,
                     total_passengers: 1
+                }
+            },
+            {
+                // Output the result to a collection
+                $out: "passenger_agg_stats"
+            }
+        ]);
+
+        var finalResponse = await mongoose.connection.collection('passenger_agg_stats').aggregate([
+            {
+                $lookup: {
+                    from: "employees", // Table to join
+                    let: { state: `$${stateField}`, year: "$YEAR", month: "$MONTH" },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        { $eq: ["$state", "$$state"] }, // Match state
+                                        { $eq: ["$YEAR", "$$year"] }, // Match year
+                                        { $eq: ["$MONTH", "$$month"] } // Match month
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    as: "employee_info" // Joined result
+                }
+            },
+            {
+                // Unwind the joined array to flatten the structure
+                $unwind: {
+                    path: "$employee_info",
+                    preserveNullAndEmptyArrays: true // Handle cases where no match is found
+                }
+            },
+            {
+                // Project the desired fields
+                $project: {
+                    YEAR: 1,
+                    MONTH: 1,
+                    STATE: `$${stateField}`,
+                    total_passengers: 1,
+                    total_employees: "$employee_info.employment_stat" // Include employment_stat from employee_data
                 }
             }
         ]);
 
-        console.log(passengerResults);
-
+        var empWithPass = await finalResponse.toArray();
+        
         
         res.status(200).json({
             message: "Aggregation complete",
-            passengerResults
+            empWithPass
         });
     } catch (error) {
         console.error(error);
