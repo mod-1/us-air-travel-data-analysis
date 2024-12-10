@@ -33,7 +33,7 @@ export default function Home() {
   DummyDataSource.set("GDP",1);
 
   const Filters:string[][] = [
-    ["filter1_econ","filter2_econ"],
+    ["filter1_econ","filter2_econ","filter3_econ"],
     ["filter1_GDP","filter2_GDP"],
   ]
   const handleSourceChange = (event: SelectChangeEvent) => {
@@ -77,7 +77,7 @@ export default function Home() {
     {source==""?null:
           Filters[DummyDataSource.get(source) as number].map((value,index) => 
             (
-              <FormControlLabel key={index} control={<Checkbox />} label={value} sx={{ color: 'black' }}  />
+              <FormControlLabel key={`${index}-${value}`} control={<Checkbox />} label={value} sx={{ color: 'black' }}  />
         ))}
     </Stack>
     <LineChart width={600} height={300} data={data}>

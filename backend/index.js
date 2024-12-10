@@ -25,20 +25,7 @@ mongoose.connect(mongoURI, {
   console.error('Failed to connect to MongoDB', err);
 });
 
-// Define a schema
-const econSchema = new mongoose.Schema({
-    CASH: Number,
-    SHORT_TERM_INV: Number,
-  },{collection: "flight_econ"});
-  
-  // Create a model
-const Econ = mongoose.model('flight_econ', econSchema);
 
-app.get('/getData', async (req, res) => {
-    const data=await Econ.findOne({});
-    console.log(data)
-    res.json(data);
- });
 
  app.use('/api', routes);
 
