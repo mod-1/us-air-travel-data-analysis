@@ -8,4 +8,4 @@ const cleanPassengerInfoSchema = new mongoose.Schema({
     PASSENGERS: Number
 });
 
-module.exports = mongoose.model('Passenger', cleanPassengerInfoSchema);
+module.exports = mongoose.model('Passenger', cleanPassengerInfoSchema, 'clean-passenger-info');

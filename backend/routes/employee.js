@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const CleanPassengerInfo = require('../models/CleanPassengerInfo');
-const EmployeeData = require('../models/EmployeeData');
 const { default: mongoose } = require('mongoose');
 
 // Middleware to validate query parameters
