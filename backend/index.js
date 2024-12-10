@@ -40,6 +40,9 @@ app.get('/getData', async (req, res) => {
     res.json(data);
  });
 
+ app.use('/api', routes);
+
+
 // Start the server
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
