@@ -13,7 +13,7 @@ const routes = require('./routes');
 app.use(express.json());
 
 // MongoDB connection URI (replace with your own MongoDB URI)
-const mongoURI = `mongodb://${process.env.MONGO_INITDB_ROOT_USERNAME}:${process.env.MONGO_INITDB_ROOT_PASSWORD}@localhost:27017/?authSource=admin`;
+const mongoURI = `mongodb://${process.env.MONGO_INITDB_ROOT_USERNAME}:${process.env.MONGO_INITDB_ROOT_PASSWORD}@localhost:27017/us-air?authSource=admin`;
 console.log(mongoURI)
 
 // Connect to MongoDB using mongoose
