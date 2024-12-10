@@ -1,6 +1,6 @@
 "use client"
 import * as React from 'react';
-import {Typography,Box, Stack, Checkbox} from "@mui/material";
+import {Typography,Box, Stack, Checkbox, Button} from "@mui/material";
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
@@ -8,6 +8,7 @@ import Select, { SelectChangeEvent } from '@mui/material/Select';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import { Line, XAxis, YAxis,Tooltip } from 'recharts';
 import dynamic from "next/dynamic"
+import apiClient from "./axios"
 
 // Dynamically import LineChart and related components with SSR disabled
 const LineChart = dynamic(() => import('recharts').then((mod) => mod.LineChart), { ssr: false });
@@ -18,13 +19,7 @@ const CartesianGrid = dynamic(() => import('recharts').then((mod) => mod.Cartesi
 
 export default function Home() {
 
-  const data = [
-    { name: 'Jan', uv: 400, pv: 2400 },
-    { name: 'Feb', uv: 300, pv: 1398 },
-    { name: 'Mar', uv: 200, pv: 9800 },
-    { name: 'Apr', uv: 278, pv: 3908 },
-    { name: 'May', uv: 189, pv: 4800 },
-  ];
+
   const [source, setSource] = React.useState<string>("");
   const [filters,setFilters] = React.useState<string[]>([]);
 
@@ -32,10 +27,24 @@ export default function Home() {
   DummyDataSource.set("flightEcon",0);
   DummyDataSource.set("GDP",1);
 
+  const [data,setData] = React.useState([
+    { name: 'Jan', uv: 400, pv: 2400 },
+    { name: 'Feb', uv: 300, pv: 1398 },
+    { name: 'Mar', uv: 200, pv: 9800 },
+    { name: 'Apr', uv: 278, pv: 3908 },
+    { name: 'May', uv: 189, pv: 4800 },
+  ]);
+  
   const Filters:string[][] = [
     ["filter1_econ","filter2_econ","filter3_econ"],
     ["filter1_GDP","filter2_GDP"],
-  ]
+  ];
+
+  const handleClick = (event:React.MouseEvent<HTMLButtonElement>) => {
+    apiClient.get("/api/flightEcon").then((data)=>{
+      console.log(data);
+    })
+  }
   const handleSourceChange = (event: SelectChangeEvent) => {
     setSource(event.target.value as string);
   };
@@ -79,6 +88,9 @@ export default function Home() {
             (
               <FormControlLabel key={`${index}-${value}`} control={<Checkbox />} label={value} sx={{ color: 'black' }}  />
         ))}
+    <Button variant='outlined' onClick={handleClick}>
+        Plot
+    </Button>
     </Stack>
     <LineChart width={600} height={300} data={data}>
         <CartesianGrid strokeDasharray="3 3" />

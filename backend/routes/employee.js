@@ -4,26 +4,26 @@ const CleanPassengerInfo = require('../models/CleanPassengerInfo');
 const { default: mongoose } = require('mongoose');
 
 // Middleware to validate query parameters
-router.use((req, res, next) => {
-    const { state, startDate, endDate, inbound } = req.query;
+// router.use((req, res, next) => {
+//     const { state, startDate, endDate, inbound } = req.query;
 
-    if (!state || !startDate || !endDate || typeof inbound === 'undefined') {
-        return res.status(400).json({ error: "Missing one or more required query parameters: state OR startDate OR endDate OR inbound" });
-    }
+//     if (!state || !startDate || !endDate || typeof inbound === 'undefined') {
+//         return res.status(400).json({ error: "Missing one or more required query parameters: state OR startDate OR endDate OR inbound" });
+//     }
 
-    // Validate that dates are valid
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    if (isNaN(start) || isNaN(end)) {
-        return res.status(400).json({ error: "Invalid startDate or endDate format" });
-    }
+//     // Validate that dates are valid
+//     const start = new Date(startDate);
+//     const end = new Date(endDate);
+//     if (isNaN(start) || isNaN(end)) {
+//         return res.status(400).json({ error: "Invalid startDate or endDate format" });
+//     }
 
-    req.query.startDate = start;
-    req.query.endDate = end;
-    req.query.inbound = inbound === 'true'; // Convert to boolean
+//     req.query.startDate = start;
+//     req.query.endDate = end;
+//     req.query.inbound = inbound === 'true'; // Convert to boolean
 
-    next();
-});
+//     next();
+// });
 
 router.get('/employee', async (req, res) => {
     const { state, startDate, endDate, inbound } = req.query;

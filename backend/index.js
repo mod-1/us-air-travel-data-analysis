@@ -3,16 +3,18 @@ require('dotenv').config({path: "../.env"}); // if using an .env file (optional,
 // Importing required modules
 const express = require('express');
 const mongoose = require('mongoose');
+const cors = require('cors');
 const app = express();
 const port = 3000;
 const routes = require('./routes');
 
 
+app.use(cors());
 // Middleware to parse JSON
 app.use(express.json());
 
 // MongoDB connection URI (replace with your own MongoDB URI)
-const mongoURI = `mongodb://${process.env.MONGO_INITDB_ROOT_USERNAME}:${process.env.MONGO_INITDB_ROOT_PASSWORD}@localhost:27017/us-air?authSource=admin`;
+const mongoURI = `mongodb://${process.env.MONGO_INITDB_ROOT_USERNAME}:${process.env.MONGO_INITDB_ROOT_PASSWORD}@localhost:27017/test-db?authSource=admin`;
 console.log(mongoURI)
 
 // Connect to MongoDB using mongoose
@@ -27,7 +29,7 @@ mongoose.connect(mongoURI, {
 
 
 
- app.use('/api', routes);
+app.use('/api', routes);
 
 
 // Start the server
