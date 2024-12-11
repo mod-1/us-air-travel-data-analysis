@@ -179,7 +179,7 @@ export default function Home() {
         </Button>
       </Stack>
 
-      <LineChart width={600} height={300} data={data}>
+      <LineChart width={1300} height={500} data={data}>
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis dataKey="name" />
         <YAxis />
