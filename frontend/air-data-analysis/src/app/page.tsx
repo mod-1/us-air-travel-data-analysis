@@ -1,11 +1,6 @@
 "use client";
 import * as React from 'react';
-import { Typography, Box, Stack, Checkbox, Button } from "@mui/material";
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import Select, { SelectChangeEvent } from '@mui/material/Select';
-import FormControlLabel from '@mui/material/FormControlLabel';
+import { Typography, Box, Stack, Checkbox, Button, FormControl, InputLabel, MenuItem, Select, FormControlLabel, SelectChangeEvent } from "@mui/material";
 import { Line, XAxis, YAxis, Tooltip } from 'recharts';
 import dynamic from "next/dynamic";
 import apiClient from "./axios";
@@ -14,9 +9,19 @@ import apiClient from "./axios";
 const LineChart = dynamic(() => import('recharts').then((mod) => mod.LineChart), { ssr: false });
 const CartesianGrid = dynamic(() => import('recharts').then((mod) => mod.CartesianGrid), { ssr: false });
 
+const states = [
+  'AK', 'AL', 'AR', 'AZ', 'CA', 'CO', 'CT', 'DC', 'DE', 'FL', 'GA', 'HI', 'IA', 'ID', 'IL', 'IN', 'KS', 'KY', 'LA', 'MA',
+  'MD', 'ME', 'MI', 'MN', 'MO', 'MS', 'MT', 'NC', 'ND', 'NH', 'NJ', 'NM', 'NV', 'NY', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC',
+  'SD', 'TN', 'TX', 'UT', 'VA', 'VT', 'WA', 'WI', 'WV', 'WY'
+];
+
+const booleanOptions = ['true', 'false'];
+
 export default function Home() {
   const [source, setSource] = React.useState<string>("");
   const [filters, setFilters] = React.useState<string[]>([]);
+  const [stateFilter, setStateFilter] = React.useState<string>("");
+  const [booleanFilter, setBooleanFilter] = React.useState<string>("");
   const [data, setData] = React.useState<any[]>([]);
 
   const DummyDataSource: Map<string, number> = new Map<string, number>();
@@ -38,7 +43,7 @@ export default function Home() {
       const response = await apiClient.get("/api/flightEcon");
       console.log(response.data);
     } else if (source === "employment") {
-      const response = await apiClient.get("/api/employee?state=MA&inbound=true");
+      const response = await apiClient.get(`/api/employee?state=${stateFilter}&inbound=${booleanFilter}`);
       const employmentData = response.data.empWithPass;
 
       // Sort by year then month
@@ -47,11 +52,10 @@ export default function Home() {
           a.YEAR - b.YEAR || a.MONTH - b.MONTH
       );
 
-      // Prepare data for plotting
+      // Normalize the returned data
       const formattedData = (() => {
-        // Extract min and max values for normalization
         const minMax = employmentData.reduce(
-          (acc, doc) => {
+          (acc: { minPassengers: number; maxPassengers: number; minEmployees: number; maxEmployees: number; }, doc: { total_passengers: number; total_employees: number; }) => {
             acc.minPassengers = Math.min(acc.minPassengers, doc.total_passengers);
             acc.maxPassengers = Math.max(acc.maxPassengers, doc.total_passengers);
             acc.minEmployees = Math.min(acc.minEmployees, doc.total_employees);
@@ -65,8 +69,7 @@ export default function Home() {
             maxEmployees: -Infinity,
           }
         );
-      
-        // Normalize the fields
+        
         return employmentData.map((doc: { YEAR: number; MONTH: number; total_passengers: number; total_employees: number }) => ({
           name: `${doc.YEAR}-${doc.MONTH}`,
           total_passengers: (doc.total_passengers - minMax.minPassengers) / (minMax.maxPassengers - minMax.minPassengers),
@@ -84,6 +87,14 @@ export default function Home() {
 
   const handleFiltersChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setFilters((filters) => [...filters, event.target.value as string]);
+  };
+
+  const handleStateChange = (event: React.ChangeEvent<{ value: unknown }>) => {
+    setStateFilter(event.target.value as string);
+  };
+
+  const handleBooleanChange = (event: React.ChangeEvent<{ value: unknown }>) => {
+    setBooleanFilter(event.target.value as string);
   };
 
   return (
@@ -115,18 +126,59 @@ export default function Home() {
           <MenuItem value={"employment"}>Employment</MenuItem>
         </Select>
       </FormControl>
+
+      {/* Show filters only if 'employment' is selected */}
+      {source === "employment" && (
+        <>
+          <Typography color="black">Select a state:</Typography>
+          <FormControl fullWidth>
+            <InputLabel>State</InputLabel>
+            <Select
+              value={stateFilter}
+              label="State"
+              onChange={handleStateChange}
+              fullWidth
+            >
+              {states.map((state) => (
+                <MenuItem key={state} value={state}>
+                  {state}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          <Typography color="black">Select inbound (true/false):</Typography>
+          <FormControl fullWidth>
+            <InputLabel>Inbound</InputLabel>
+            <Select
+              value={booleanFilter}
+              label="Inbound"
+              onChange={handleBooleanChange}
+              fullWidth
+            >
+              {booleanOptions.map((option) => (
+                <MenuItem key={option} value={option}>
+                  {option}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </>
+      )}
+
       <Typography color="black">
         Choose some filters:
       </Typography>
       <Stack direction={"row"}>
-        {source === "" ? null :
+        {source === "" || source === "employment" ? null :
           Filters[DummyDataSource.get(source) as number].map((value, index) => (
             <FormControlLabel key={`${index}-${value}`} control={<Checkbox />} label={value} sx={{ color: 'black' }} />
-          ))}
+        ))}
         <Button variant='outlined' onClick={handleClick}>
           Plot
         </Button>
       </Stack>
+
       <LineChart width={600} height={300} data={data}>
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis dataKey="name" />
