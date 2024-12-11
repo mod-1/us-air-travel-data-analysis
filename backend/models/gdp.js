@@ -2,11 +2,11 @@ const mongoose = require('mongoose');
 
 const gdpSchema = new mongoose.Schema({
   year: Number,
-  quarter: String,
+  quarter: Number,
   gdp_value: Number,
   Region: String
 });
 
-const gdp = mongoose.model('Gdp', gdpSchema);
+const gdp = mongoose.model('Gdp', gdpSchema, 'gdp');
 
 module.exports = gdp;
