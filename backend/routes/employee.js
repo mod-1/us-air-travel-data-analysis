@@ -84,7 +84,7 @@ router.get('/employee', async (req, res) => {
         var finalResponse = await mongoose.connection.collection('passenger_agg_stats').aggregate([
             {
                 $lookup: {
-                    from: "employees", // Table to join
+                    from: "employee_data",
                     let: { state: `$${stateField}`, year: "$YEAR", month: "$MONTH" },
                     pipeline: [
                         {
@@ -120,7 +120,8 @@ router.get('/employee', async (req, res) => {
                 }
             }
         ]);
-
+        
+        
         var empWithPass = await finalResponse.toArray();
         
         
