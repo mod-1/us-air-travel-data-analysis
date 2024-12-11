@@ -40,10 +40,16 @@ export default function Home() {
     ["filter1_GDP","filter2_GDP"],
   ];
 
-  const handleClick = (event:React.MouseEvent<HTMLButtonElement>) => {
-    apiClient.get("/api/flightEcon").then((data)=>{
-      console.log(data);
-    })
+  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    if (source == "GDP") {
+      apiClient.get("/api/gdp").then((data) => {
+        console.log(data);
+      })
+    } else {
+      apiClient.get("/api/flightEcon").then((data) => {
+        console.log(data);
+      })
+    }
   }
   const handleSourceChange = (event: SelectChangeEvent) => {
     setSource(event.target.value as string);
