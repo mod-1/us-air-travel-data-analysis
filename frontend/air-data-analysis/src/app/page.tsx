@@ -26,6 +26,7 @@ export default function Home() {
   const DummyDataSource:Map<string,number> = new Map<string,number>();
   DummyDataSource.set("flightEcon",0);
   DummyDataSource.set("GDP",1);
+  DummyDataSource.set("employment",2);
 
   const [data,setData] = React.useState([
     { name: 'Jan', uv: 400, pv: 2400 },
@@ -38,16 +39,36 @@ export default function Home() {
   const Filters:string[][] = [
     ["filter1_econ","filter2_econ","filter3_econ"],
     ["filter1_GDP","filter2_GDP"],
+    ["filter1_emp","filter2_emp"],
   ];
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     if (source == "GDP") {
       apiClient.get("/api/gdp").then((data) => {
         console.log(data);
+
       })
-    } else {
+    } else if(source=='flightEcon'){
       apiClient.get("/api/flightEcon").then((data) => {
         console.log(data);
+      })
+    }else{
+      apiClient.get("/api/employee?state=MA&inbound=true").then((data) => {
+        const employmentData = data.data.empWithPass;
+
+        // Sort by year then month
+        employmentData.sort(
+          (a: { YEAR: number; MONTH: number; }, b: { YEAR: number; MONTH: number; }) =>
+            a.YEAR - b.YEAR || a.MONTH - b.MONTH
+        );
+
+        // Prepare data for plotting
+        const formattedData = employmentData.map((doc: { YEAR: number; MONTH: number; total_passengers: number; total_employees: number; }) => ({
+          name: `${doc.YEAR}-${doc.MONTH}`,
+          total_passengers: doc.total_passengers,
+          total_employees: doc.total_employees,
+        }));
+        console.log(formattedData);
       })
     }
   }
@@ -83,6 +104,7 @@ export default function Home() {
         >
           <MenuItem value={"flightEcon"}>flightEcon</MenuItem>
           <MenuItem value={"GDP"}>GDP</MenuItem>
+          <MenuItem value={"employment"}>Employment</MenuItem>
         </Select>
       </FormControl>
       <Typography color="black">
