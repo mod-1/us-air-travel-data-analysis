@@ -1,6 +1,6 @@
 "use client";
 import * as React from 'react';
-import { Typography, Box, Stack, Checkbox, Button, FormControl, InputLabel, MenuItem, Select, FormControlLabel, SelectChangeEvent } from "@mui/material";
+import { Typography, Box, Button, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent } from "@mui/material";
 import { Line, XAxis, YAxis, Tooltip } from 'recharts';
 import dynamic from "next/dynamic";
 import apiClient from "./axios";
@@ -74,7 +74,6 @@ const booleanOptions = ['true', 'false'];
 
 export default function Home() {
   const [source, setSource] = React.useState<string>("");
-  const [filters, setFilters] = React.useState<string[]>([]);
   const [stateFilter, setStateFilter] = React.useState<string>("");
   const [booleanFilter, setBooleanFilter] = React.useState<string>("");
   const [data, setData] = React.useState<any[]>([]);
@@ -83,12 +82,6 @@ export default function Home() {
   DummyDataSource.set("flightEcon", 0);
   DummyDataSource.set("GDP", 1);
   DummyDataSource.set("employment", 2);
-
-  const Filters: string[][] = [
-    ["filter1_econ", "filter2_econ", "filter3_econ"],
-    ["filter1_GDP", "filter2_GDP"],
-    ["filter1_emp", "filter2_emp"],
-  ];
 
   const handleClick = async (event: React.MouseEvent<HTMLButtonElement>) => {
     if (source === "GDP") {
@@ -148,10 +141,6 @@ export default function Home() {
 
   const handleSourceChange = (event: SelectChangeEvent) => {
     setSource(event.target.value as string);
-  };
-
-  const handleFiltersChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setFilters((filters) => [...filters, event.target.value as string]);
   };
 
   const handleStateChange = (event: React.ChangeEvent<{ value: unknown }>) => {
