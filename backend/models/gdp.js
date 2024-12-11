@@ -7,6 +7,9 @@ const gdpSchema = new mongoose.Schema({
   Region: String
 });
 
+gdpSchema.index({ year: 1, quarter: 1 });
+gdpSchema.index({ Region: 1 });
+
 const gdp = mongoose.model('Gdp', gdpSchema, 'gdp');
 
 module.exports = gdp;

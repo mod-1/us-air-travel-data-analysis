@@ -10,4 +10,9 @@ const cleanPassengerInfoSchema = new mongoose.Schema({
     PASSENGERS: Number
 });
 
+cleanPassengerInfoSchema.index({ YEAR: 1, QUARTER: 1, MONTH: 1 });
+cleanPassengerInfoSchema.index({ ORIGIN_STATE_NM: 1 });
+cleanPassengerInfoSchema.index({ ORIGIN_STATE_ABR: 1 });
+cleanPassengerInfoSchema.index({ DEST_STATE_ABR: 1 });
+
 module.exports = mongoose.model('Passenger', cleanPassengerInfoSchema, 'clean-passenger-info');
