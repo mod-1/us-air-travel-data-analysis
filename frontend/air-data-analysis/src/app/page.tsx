@@ -15,6 +15,61 @@ const states = [
   'SD', 'TN', 'TX', 'UT', 'VA', 'VT', 'WA', 'WI', 'WV', 'WY'
 ];
 
+const gdpStates = [
+  'United States',
+  'Alabama',
+  'Alaska',
+  'Arizona',
+  'Arkansas',
+  'California',
+  'Colorado',
+  'Connecticut',
+  'Delaware',
+  'Florida',
+  'Georgia',
+  'Hawaii',
+  'Idaho',
+  'Illinois',
+  'Indiana',
+  'Iowa',
+  'Kansas',
+  'Kentucky',
+  'Louisiana',
+  'Maine',
+  'Maryland',
+  'Massachusetts',
+  'Michigan',
+  'Minnesota',
+  'Mississippi',
+  'Missouri',
+  'Montana',
+  'Nebraska',
+  'Nevada',
+  'New Hampshire',
+  'New Jersey',
+  'New Mexico',
+  'New York',
+  'North Carolina',
+  'North Dakota',
+  'Ohio',
+  'Oklahoma',
+  'Oregon',
+  'Pennsylvania',
+  'Puerto Rico',
+  'Rhode Island',
+  'South Carolina',
+  'South Dakota',
+  'Tennessee',
+  'Texas',
+  'Utah',
+  'Vermont',
+  'Virginia',
+  'Washington',
+  'West Virginia',
+  'Wisconsin',
+  'Wyoming'
+]
+
 const booleanOptions = ['true', 'false'];
 
 export default function Home() {
@@ -37,11 +92,21 @@ export default function Home() {
 
   const handleClick = async (event: React.MouseEvent<HTMLButtonElement>) => {
     if (source === "GDP") {
-      const response = await apiClient.get("/api/gdp");
-      console.log(response.data);
+      let uri = "";
+      if (stateFilter === "United States") {
+        uri = "/api/gdp";
+      } else {
+        uri = `/api/gdp?state=${stateFilter}`;
+      }
+      const response = await apiClient.get(uri);
+      const gdpData = response.data;
+      setData(gdpData.map((doc: { year: number; quarter: number; passenger_count: number; gdp: number, region: string, _id: object }) => ({
+        name: `${doc.year}-${doc.quarter}`,
+        passenger_count: doc.passenger_count,
+        gdp: doc.gdp,
+      })))
     } else if (source === "flightEcon") {
       const response = await apiClient.get("/api/flightEcon");
-      console.log(response.data);
     } else if (source === "employment") {
       const response = await apiClient.get(`/api/employee?state=${stateFilter}&inbound=${booleanFilter}`);
       const employmentData = response.data.empWithPass;
@@ -165,19 +230,30 @@ export default function Home() {
           </FormControl>
         </>
       )}
+      {source === "GDP" && (
+        <>
+          <Typography color="black">Select a state:</Typography>
+          <FormControl fullWidth>
+            <InputLabel>State</InputLabel>
+            <Select
+              value={stateFilter}
+              label="State"
+              onChange={handleStateChange}
+              fullWidth
+            >
+              {gdpStates.map((state) => (
+                <MenuItem key={state} value={state}>
+                  {state}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </>
+      )}
 
-      <Typography color="black">
-        Choose some filters:
-      </Typography>
-      <Stack direction={"row"}>
-        {source === "" || source === "employment" ? null :
-          Filters[DummyDataSource.get(source) as number].map((value, index) => (
-            <FormControlLabel key={`${index}-${value}`} control={<Checkbox />} label={value} sx={{ color: 'black' }} />
-        ))}
-        <Button variant='outlined' onClick={handleClick}>
-          Plot
-        </Button>
-      </Stack>
+      <Button variant='outlined' onClick={handleClick}>
+        Plot
+      </Button>
 
       <LineChart width={1300} height={500} data={data}>
         <CartesianGrid strokeDasharray="3 3" />
