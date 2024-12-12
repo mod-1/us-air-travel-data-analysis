@@ -34,8 +34,8 @@ router.get('/flightEcon', async (req, res) => {
     }
   
     if (startDate && endDate) {
-        passengerMatch.YEAR = { $gt: startYear, $lt: endYear };
         passengerMatch.$or = [
+            { YEAR: {$gt: startYear,$lt: endYear} },
           { YEAR: startYear, QUARTER: { $gte: startQuarter } },
           { YEAR: endYear, QUARTER: { $lte: endQuarter } }
         ];
@@ -120,7 +120,7 @@ router.get('/flightEcon', async (req, res) => {
       ];
   
       const result = await CleanPassengerInfo.aggregate(pipeline);
-      console.log('Result:', result);
+    //   console.log('Result:', result);
   
       res.json(result);
     } catch (err) {

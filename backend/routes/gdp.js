@@ -26,11 +26,11 @@ router.get('/gdp', async (req, res) => {
   }
 
   if (startDate && endDate) {
-    passengerMatch.YEAR = { $gt: startYear, $lt: endYear };
     passengerMatch.$or = [
-      { YEAR: startYear, QUARTER: { $gte: startQuarter } },
-      { YEAR: endYear, QUARTER: { $lte: endQuarter } }
-    ];
+      { YEAR: {$gt: startYear,$lt: endYear} },
+    { YEAR: startYear, QUARTER: { $gte: startQuarter } },
+    { YEAR: endYear, QUARTER: { $lte: endQuarter } }
+  ];
   } else if (startDate) {
     passengerMatch.YEAR = { $gte: startYear };
     passengerMatch.QUARTER = { $gte: startQuarter };

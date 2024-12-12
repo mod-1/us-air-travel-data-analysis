@@ -233,7 +233,12 @@ export default function Home() {
       } else {
         uri = `/api/gdp?state=${stateFilter}`;
       }
-      const response = await apiClient.get(uri);
+      const response = await apiClient.get(uri,{
+        params:{
+          "startDate":startCalendarValue?.toString(),
+          "endDate":endCalendarValue?.toString()
+        }
+      });
       const gdpData = response.data;
       setData(gdpData.map((doc: { year: number; quarter: number; passenger_count: number; gdp: number, region: string, _id: object }) => ({
         name: `${doc.year}-${doc.quarter}`,
@@ -245,8 +250,8 @@ export default function Home() {
         params: {
           "carrierName":carrierFilter,
           "econField":econFilter,
-          // "startDate":startCalendarValue?.toString(),
-          // "endDate":endCalendarValue?.toString(),
+          "startDate":startCalendarValue?.toString(),
+          "endDate":endCalendarValue?.toString(),
         },
       });
       var flightEconData=response.data;
@@ -278,7 +283,7 @@ export default function Home() {
         console.log(flightEconData);
         return flightEconData;
       })();
-      console.warn(formattedData);
+      // console.warn(formattedData);
       formattedData.sort(
         (a, b) => a.name.localeCompare(b.name)
       );
@@ -479,7 +484,7 @@ export default function Home() {
 
       <LineChart width={1500} height={500} data={data}>
         <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="name" interval={1}/>
+        <XAxis dataKey="name" interval={1} fontSize={"10px"}/>
         <YAxis />
         <Tooltip />
         {data.length > 0 && Object.keys(data[0])
