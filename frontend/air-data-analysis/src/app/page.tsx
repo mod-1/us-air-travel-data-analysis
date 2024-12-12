@@ -240,10 +240,25 @@ export default function Home() {
         }
       });
       const gdpData = response.data;
+      const minMax = gdpData.reduce(
+          (acc: { minPassengers: number; maxPassengers: number; minGdp: number; maxGdp: number; }, doc: { year: number; quarter: number; passenger_count: number; gdp: number, region: string, _id: object }) => {
+            acc.minPassengers = Math.min(acc.minPassengers, doc.passenger_count);
+            acc.maxPassengers = Math.max(acc.maxPassengers, doc.passenger_count);
+            acc.minGdp = Math.min(acc.minGdp, doc.gdp);
+            acc.maxGdp = Math.max(acc.maxGdp, doc.gdp);
+            return acc;
+          },
+          {
+            minPassengers: Infinity,
+            maxPassengers: -Infinity,
+            minGdp: Infinity,
+            maxGdp: -Infinity,
+          }
+        );
       setData(gdpData.map((doc: { year: number; quarter: number; passenger_count: number; gdp: number, region: string, _id: object }) => ({
         name: `${doc.year}-${doc.quarter}`,
-        passenger_count: doc.passenger_count,
-        gdp: doc.gdp,
+        passenger_count: (doc.passenger_count-minMax.minPassengers) / (minMax.maxPassengers - minMax.minPassengers),
+        gdp: (doc.gdp-minMax.minGdp) / (minMax.maxGdp - minMax.minGdp),
       })))
     } else if (source === "flightEcon") {
       const response = await apiClient.get("/api/flightEcon",{
