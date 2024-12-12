@@ -1,9 +1,13 @@
 from flask import Flask, jsonify, request  # Make sure to import 'request'
 from pymongo import MongoClient
 import pandas as pd
-from flask_cors import CORS
+from flask_cors import CORS, cross_origin
 from datetime import datetime
+from dotenv import load_dotenv
+import os 
 
+
+load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
@@ -11,22 +15,27 @@ CORS(app)
 pre_data = ""
 
 # Connect to MongoDB
-client = MongoClient('mongodb://127.0.0.1:27017')
-db = client['holiday_data']
+client = MongoClient(f"mongodb://{os.getenv('MONGO_INITDB_ROOT_USERNAME')}:{os.getenv('MONGO_INITDB_ROOT_PASSWORD')}@localhost:27017/?authSource=admin")
+db = client[os.getenv('MONGO_DB_NAME')]
+
 
 # Define a function to fetch and process data
 def fetch_and_process_data():
     # Read flight_data into a DataFrame
-    flight_data = db["us-air.clean-passenger-info"]
+    flight_data = db["clean-passenger-info"]
     flight_data_df = pd.DataFrame(list(flight_data.find({}, {
         'YEAR': 1, 'MONTH': 1, 'PASSENGERS': 1, 'SEATS': 1, '_id': 0
     })))
+    print(flight_data_df)
 
     # Read holiday_data into a DataFrame
     holiday_data = db["holiday_data"]
+    
     holiday_data_df = pd.DataFrame(list(holiday_data.find({}, {
         'Year': 1, 'Month': 1, 'Holiday': 1, '_id': 0
     })))
+
+    print(holiday_data_df)
 
     # Rename columns in holiday_data to match flight_data
     holiday_data_df = holiday_data_df.rename(columns={'Year': 'YEAR', 'Month': 'MONTH'})
@@ -64,6 +73,7 @@ def get_top_holidays():
     return jsonify({'top_holidays': pre_data})
 
 @app.route('/result', methods=['GET'])
+@cross_origin()
 def index():
     # Get start and end dates from query parameters
     start_date_str = request.args.get('start')
