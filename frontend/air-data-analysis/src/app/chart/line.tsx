@@ -18,9 +18,7 @@ const HolidayLineGraph = ({ startDate, endDate }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(
-          `http://localhost:5000/result?start=${startDate}&end=${endDate}`
-        ); // Replace with your API URL
+        const response = await fetch(`http://127.0.0.1:5000/result?start=${startDate}&end=${endDate}`);
         const result = await response.json();
 
         // Format the data for proper graph rendering
