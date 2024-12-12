@@ -25,26 +25,7 @@ router.get('/flightEcon', async (req, res) => {
     }
 
     console.log(startYear,startQuarter,endYear,endQuarter);
-  
-    // Build the query object for GDP
-    let flightQuery = {};
-    if (carrierName) {
-      flightQuery.UNIQUE_CARRIER_NAME = carrierName;
-    } else {
-      flightQuery.UNIQUE_CARRIER_NAME = 'United States';
-    }
-  
-    if (startDate && endDate) {
-      flightQuery.$or = [
-        { YEAR: { $gte: startYear, $lte: endYear }, QUARTER: { $gte: startQuarter, $lte: endQuarter }, },
-      ];
-    } else if (startDate) {
-      flightQuery.YEAR = { $gte: startYear };
-      flightQuery.QUARTER = { $gte: startQuarter };
-    } else if (endDate) {
-      flightQuery.YEAR = { $lte: endYear };
-      flightQuery.QUARTER = { $lte: endQuarter };
-    }
+
   
     // Build the aggregation pipeline for passengers
     let passengerMatch = {};
@@ -53,11 +34,11 @@ router.get('/flightEcon', async (req, res) => {
     }
   
     if (startDate && endDate) {
-      passengerMatch.YEAR = { $gt: startYear, $lt: endYear };
-      passengerMatch.$or = [
-        { YEAR: startYear, QUARTER: { $gte: startQuarter } },
-        { YEAR: endYear, QUARTER: { $lte: endQuarter } }
-      ];
+        passengerMatch.YEAR = { $gt: startYear, $lt: endYear };
+        passengerMatch.$or = [
+          { YEAR: startYear, QUARTER: { $gte: startQuarter } },
+          { YEAR: endYear, QUARTER: { $lte: endQuarter } }
+        ];
     } else if (startDate) {
       passengerMatch.YEAR = { $gte: startYear };
       passengerMatch.QUARTER = { $gte: startQuarter };
@@ -139,7 +120,7 @@ router.get('/flightEcon', async (req, res) => {
       ];
   
       const result = await CleanPassengerInfo.aggregate(pipeline);
-    //   console.log('Result:', result);
+      console.log('Result:', result);
   
       res.json(result);
     } catch (err) {
