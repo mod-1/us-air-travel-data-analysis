@@ -304,7 +304,15 @@ export default function Home() {
       );
       setData(formattedData);
     } else if (source === "employment") {
-      const response = await apiClient.get(`/api/employee?state=${stateFilter}&inbound=${booleanFilter}`);
+      // const response = await apiClient.get(`/api/employee?state=${stateFilter}&inbound=${booleanFilter}`);
+      const response = await apiClient.get('/api/employee',{
+        params:{
+          "state":stateFilter,
+          "startDate":startCalendarValue?.toString(),
+          "endDate":endCalendarValue?.toString(),
+          "inbound":booleanFilter
+        }
+      });
       const employmentData = response.data.empWithPass;
 
       // Sort by year then month

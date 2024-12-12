@@ -27,33 +27,35 @@ const { default: mongoose } = require('mongoose');
 // });
 
 router.get('/employee', async (req, res) => {
-    const { state, inbound } = req.query;
-
+    const { state, startDate, endDate, inbound } = req.query;
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    
     const stateField = inbound ? "DEST_STATE_ABR" : "ORIGIN_STATE_ABR"; // Dynamic state field
 
     try {
         // First aggregation query for passenger data
         await CleanPassengerInfo.aggregate([
-            // {
-            //     // Filter records within the specified date range
-            //     $match: {
-            //         $or: [
-            //             // Same year: filter by month
-            //             {
-            //                 YEAR: startDate.getFullYear(),
-            //                 MONTH: { $gte: startDate.getMonth() + 1 }
-            //             },
-            //             {
-            //                 YEAR: endDate.getFullYear(),
-            //                 MONTH: { $lte: endDate.getMonth() + 1 }
-            //             },
-            //             // Years between startDate and endDate
-            //             {
-            //                 YEAR: { $gt: startDate.getFullYear(), $lt: endDate.getFullYear() }
-            //             }
-            //         ]
-            //     }
-            // },
+            {
+                // Filter records within the specified date range
+                $match: {
+                    $or: [
+                        // Same year: filter by month
+                        {
+                            YEAR: start.getFullYear(),
+                            MONTH: { $gte: start.getMonth() + 1 }
+                        },
+                        {
+                            YEAR: end.getFullYear(),
+                            MONTH: { $lte: end.getMonth() + 1 }
+                        },
+                        // Years between startDate and endDate
+                        {
+                            YEAR: { $gt: start.getFullYear(), $lt: end.getFullYear() }
+                        }
+                    ]
+                }
+            },
             {
                 // Group by year, month, and dynamic state field (DEST_STATE_ABR or ORIGIN_STATE_ABR)
                 $group: {
