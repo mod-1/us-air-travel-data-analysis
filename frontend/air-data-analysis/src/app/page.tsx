@@ -4,6 +4,11 @@ import { Typography, Box, Button, FormControl, InputLabel, MenuItem, Select, Sel
 import { Line, XAxis, YAxis, Tooltip } from 'recharts';
 import dynamic from "next/dynamic";
 import apiClient from "./axios";
+import dayjs, { Dayjs } from 'dayjs';
+import { DemoContainer, DemoItem } from '@mui/x-date-pickers/internals/demo';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { DatePicker } from '@mui/x-date-pickers';
 
 // Dynamically import LineChart and related components with SSR disabled
 const LineChart = dynamic(() => import('recharts').then((mod) => mod.LineChart), { ssr: false });
@@ -69,12 +74,24 @@ const gdpStates = [
   'Wisconsin',
   'Wyoming'
 ]
+const carrierNames = [
+  "ExpressJet Airlines Inc."
+];
+
+const econFields= [
+  "DEF_CREDITS_OTH"
+];
 
 const booleanOptions = ['true', 'false'];
 
 export default function Home() {
   const [source, setSource] = React.useState<string>("");
   const [stateFilter, setStateFilter] = React.useState<string>("");
+  const [carrierFilter, setCarrierFilter] = React.useState<string>("");
+  const [econFilter, setEconFilter] = React.useState<string>("");
+  const [startCalendarValue, setStartCalendarValue] = React.useState<Dayjs | null>(dayjs('2022-04-17'));
+  const [endCalendarValue, setEndCalendarValue] = React.useState<Dayjs | null>(dayjs('2022-04-17'));
+
   const [booleanFilter, setBooleanFilter] = React.useState<string>("");
   const [data, setData] = React.useState<any[]>([]);
 
@@ -99,7 +116,48 @@ export default function Home() {
         gdp: doc.gdp,
       })))
     } else if (source === "flightEcon") {
-      const response = await apiClient.get("/api/flightEcon");
+      const response = await apiClient.get("/api/flightEcon",{
+        params: {
+          "carrierName":carrierFilter,
+          "econField":econFilter,
+          // "startDate":startCalendarValue?.toString(),
+          // "endDate":endCalendarValue?.toString(),
+        },
+      });
+      var flightEconData=response.data;
+      console.log(flightEconData);
+      // Sort by year then month
+      // Normalize the returned data
+      const formattedData = (() => {
+        const minMax = flightEconData.reduce(
+          (acc: { minPassengers: number; maxPassengers: number; minData: number; maxData: number; }, doc: { year: number; quarter: number; passenger_count: number; data: number }) => {
+            acc.minPassengers = Math.min(acc.minPassengers, doc.passenger_count);
+            acc.maxPassengers = Math.max(acc.maxPassengers, doc.passenger_count);
+            acc.minData = Math.min(acc.minData, doc.data);
+            acc.maxData = Math.max(acc.maxData, doc.data);
+            return acc;
+          },
+          {
+            minPassengers: Infinity,
+            maxPassengers: -Infinity,
+            minData: Infinity,
+            maxData: -Infinity,
+          }
+        );
+        
+        flightEconData = flightEconData.map((doc: { year: number; quarter: number; passenger_count: number; data: number }) => ({
+          name: `${doc.year}-${doc.quarter}`,
+          passenger_count: (doc.passenger_count-minMax.minPassengers)/(minMax.maxPassengers-minMax.minPassengers),
+          [econFilter]: (doc.data-minMax.minData)/(minMax.maxData-minMax.minData),
+        }));
+        console.log(flightEconData);
+        return flightEconData;
+      })();
+      console.warn(formattedData);
+      formattedData.sort(
+        (a, b) => a.name.localeCompare(b.name)
+      );
+      setData(formattedData);
     } else if (source === "employment") {
       const response = await apiClient.get(`/api/employee?state=${stateFilter}&inbound=${booleanFilter}`);
       const employmentData = response.data.empWithPass;
@@ -147,21 +205,28 @@ export default function Home() {
     setStateFilter(event.target.value as string);
   };
 
+  const handleCarrierChange = (event: React.ChangeEvent<{ value: unknown }>) =>{
+    setCarrierFilter(event.target.value as string);
+  };
+
+  const handleEconChange = (event: React.ChangeEvent<{ value: unknown }>) =>{
+    setEconFilter(event.target.value as string);
+  };
   const handleBooleanChange = (event: React.ChangeEvent<{ value: unknown }>) => {
     setBooleanFilter(event.target.value as string);
   };
 
   return (
-    <Box
+    <Stack
       sx={{
-        display: 'flex',              // Flexbox to center content
-        flexDirection: 'column',      // Stack elements vertically
         alignItems: 'center',         // Horizontally center content
         justifyContent: 'top',        // Vertically center content
         minHeight: '100vh',           // Full viewport height
         backgroundColor: '#f0f0f0',   // Light background color
         padding: 2,                   // Padding around the content
       }}
+      direction={"column"}
+      spacing={"12px"}
     >
       <Typography variant="h2" color="black">Air data analysis</Typography>
       <Typography color="black">
@@ -180,6 +245,13 @@ export default function Home() {
           <MenuItem value={"employment"}>Employment</MenuItem>
         </Select>
       </FormControl>
+      <Stack direction={"row"}>
+
+      <LocalizationProvider dateAdapter={AdapterDayjs}>
+          <DatePicker label="Start date"value={startCalendarValue} onChange={(newValue) => setStartCalendarValue(newValue)} />
+          <DatePicker label="End date"value={endCalendarValue} onChange={(newValue) => setEndCalendarValue(newValue)} />
+    </LocalizationProvider>
+    </Stack>
 
       {/* Show filters only if 'employment' is selected */}
       {source === "employment" && (
@@ -233,6 +305,42 @@ export default function Home() {
               {gdpStates.map((state) => (
                 <MenuItem key={state} value={state}>
                   {state}
+                  </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </>
+      )}
+      {source === "flightEcon" && (
+        <>
+          <Typography color="black">Select a Carrier:</Typography>
+          <FormControl fullWidth>
+            <InputLabel>Carrier Name</InputLabel>
+            <Select
+              value={carrierFilter}
+              label="Carrier"
+              onChange={handleCarrierChange}
+              fullWidth
+            >
+              {carrierNames.map((carrier) => (
+                <MenuItem key={carrier} value={carrier}>
+                  {carrier}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <Typography color="black">Select a Economy Field:</Typography>
+          <FormControl fullWidth>
+          <InputLabel>Economic Field Name</InputLabel>
+            <Select
+              value={econFilter}
+              label="Econ"
+              onChange={handleEconChange}
+              fullWidth
+            >
+              {econFields.map((econField) => (
+                <MenuItem key={econField} value={econField}>
+                  {econField}
                 </MenuItem>
               ))}
             </Select>
@@ -244,18 +352,18 @@ export default function Home() {
         Plot
       </Button>
 
-      <LineChart width={1300} height={500} data={data}>
+      <LineChart width={1500} height={500} data={data}>
         <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="name" />
+        <XAxis dataKey="name" interval={1}/>
         <YAxis />
-        <Tooltip />
+        {/* <Tooltip /> */}
         {data.length > 0 && Object.keys(data[0])
           .filter(key => key !== "name")
           .map((key) => (
             <Line key={key} type="monotone" dataKey={key} stroke={getColor(key)} />
           ))}
       </LineChart>
-    </Box>
+    </Stack>
   );
 
   // Function to generate a unique color for each line
