@@ -511,8 +511,10 @@ export default function Home() {
       {source !== "Holidays" && data.length > 0 && (
         <LineChart width={1500} height={500} data={data}>
           <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="name" interval={1} />
+          <XAxis dataKey="name" interval={10} />
           <YAxis />
+          {/* Add Tooltip component */}
+          <Tooltip />
           {Object.keys(data[0])
             .filter(key => key !== "name")
             .map((key) => (
