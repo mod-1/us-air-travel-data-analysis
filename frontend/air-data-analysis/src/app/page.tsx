@@ -9,10 +9,12 @@ import { DemoContainer, DemoItem } from '@mui/x-date-pickers/internals/demo';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers';
+import HolidayLineGraph from './chart/line';
 
 // Dynamically import LineChart and related components with SSR disabled
 const LineChart = dynamic(() => import('recharts').then((mod) => mod.LineChart), { ssr: false });
 const CartesianGrid = dynamic(() => import('recharts').then((mod) => mod.CartesianGrid), { ssr: false });
+
 
 const states = [
   'AK', 'AL', 'AR', 'AZ', 'CA', 'CO', 'CT', 'DC', 'DE', 'FL', 'GA', 'HI', 'IA', 'ID', 'IL', 'IN', 'KS', 'KY', 'LA', 'MA',
@@ -73,7 +75,7 @@ const gdpStates = [
   'West Virginia',
   'Wisconsin',
   'Wyoming'
-]
+];
 const carrierNames = [
   '21 Air LLC',
   'ABX Air Inc',
@@ -224,6 +226,7 @@ export default function Home() {
   DummyDataSource.set("flightEcon", 0);
   DummyDataSource.set("GDP", 1);
   DummyDataSource.set("employment", 2);
+  DummyDataSource.set("Holidays", 3);
 
   const handleClick = async (event: React.MouseEvent<HTMLButtonElement>) => {
     if (source === "GDP") {
@@ -261,7 +264,7 @@ export default function Home() {
         gdp: (doc.gdp-minMax.minGdp) / (minMax.maxGdp - minMax.minGdp),
       })))
     } else if (source === "flightEcon") {
-      const response = await apiClient.get("/api/flightEcon",{
+      const response = await apiClient.get("/api/flightEcon", {
         params: {
           "carrierName":carrierFilter,
           "econField":econFilter,
@@ -269,8 +272,7 @@ export default function Home() {
           "endDate":endCalendarValue?.toString(),
         },
       });
-      var flightEconData=response.data;
-      console.log(flightEconData);
+      var flightEconData = response.data;
       // Sort by year then month
       // Normalize the returned data
       const formattedData = (() => {
@@ -292,10 +294,9 @@ export default function Home() {
         
         flightEconData = flightEconData.map((doc: { year: number; quarter: number; passenger_count: number; data: number }) => ({
           name: `${doc.year}-${doc.quarter}`,
-          passenger_count: (doc.passenger_count-minMax.minPassengers)/(minMax.maxPassengers-minMax.minPassengers),
-          [econFilter]: (doc.data-minMax.minData)/(minMax.maxData-minMax.minData),
+          passenger_count: (doc.passenger_count - minMax.minPassengers) / (minMax.maxPassengers - minMax.minPassengers),
+          [econFilter]: (doc.data - minMax.minData) / (minMax.maxData - minMax.minData),
         }));
-        console.log(flightEconData);
         return flightEconData;
       })();
       // console.warn(formattedData);
@@ -345,8 +346,10 @@ export default function Home() {
           total_employees: (doc.total_employees - minMax.minEmployees) / (minMax.maxEmployees - minMax.minEmployees),
         }));
       })();
-      console.warn(formattedData);
       setData(formattedData);
+    } else if (source === "Holidays") {
+      // For Holidays, we don't need to fetch data here
+      setData([]); // Empty the current data to prevent confusion
     }
   };
 
@@ -358,13 +361,14 @@ export default function Home() {
     setStateFilter(event.target.value as string);
   };
 
-  const handleCarrierChange = (event: React.ChangeEvent<{ value: unknown }>) =>{
+  const handleCarrierChange = (event: React.ChangeEvent<{ value: unknown }>) => {
     setCarrierFilter(event.target.value as string);
   };
 
-  const handleEconChange = (event: React.ChangeEvent<{ value: unknown }>) =>{
+  const handleEconChange = (event: React.ChangeEvent<{ value: unknown }>) => {
     setEconFilter(event.target.value as string);
   };
+
   const handleBooleanChange = (event: React.ChangeEvent<{ value: unknown }>) => {
     setBooleanFilter(event.target.value as string);
   };
@@ -372,19 +376,17 @@ export default function Home() {
   return (
     <Stack
       sx={{
-        alignItems: 'center',         // Horizontally center content
-        justifyContent: 'top',        // Vertically center content
-        minHeight: '100vh',           // Full viewport height
-        backgroundColor: '#f0f0f0',   // Light background color
-        padding: 2,                   // Padding around the content
+        alignItems: 'center',
+        justifyContent: 'top',
+        minHeight: '100vh',
+        backgroundColor: '#f0f0f0',
+        padding: 2,
       }}
       direction={"column"}
       spacing={"12px"}
     >
       <Typography variant="h2" color="black">Air data analysis</Typography>
-      <Typography color="black">
-        Choose a data source:
-      </Typography>
+      <Typography color="black">Choose a data source:</Typography>
       <FormControl fullWidth>
         <InputLabel>Data source</InputLabel>
         <Select
@@ -396,15 +398,15 @@ export default function Home() {
           <MenuItem value={"flightEcon"}>flightEcon</MenuItem>
           <MenuItem value={"GDP"}>GDP</MenuItem>
           <MenuItem value={"employment"}>Employment</MenuItem>
+          <MenuItem value={"Holidays"}>Holidays</MenuItem>
         </Select>
       </FormControl>
       <Stack direction={"row"}>
-
-      <LocalizationProvider dateAdapter={AdapterDayjs}>
-          <DatePicker label="Start date"value={startCalendarValue} onChange={(newValue) => setStartCalendarValue(newValue)} />
-          <DatePicker label="End date"value={endCalendarValue} onChange={(newValue) => setEndCalendarValue(newValue)} />
-    </LocalizationProvider>
-    </Stack>
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
+          <DatePicker label="Start date" value={startCalendarValue} onChange={(newValue) => setStartCalendarValue(newValue)} />
+          <DatePicker label="End date" value={endCalendarValue} onChange={(newValue) => setEndCalendarValue(newValue)} />
+        </LocalizationProvider>
+      </Stack>
 
       {/* Show filters only if 'employment' is selected */}
       {source === "employment" && (
@@ -458,7 +460,7 @@ export default function Home() {
               {gdpStates.map((state) => (
                 <MenuItem key={state} value={state}>
                   {state}
-                  </MenuItem>
+                </MenuItem>
               ))}
             </Select>
           </FormControl>
@@ -484,7 +486,7 @@ export default function Home() {
           </FormControl>
           <Typography color="black">Select a Economy Field:</Typography>
           <FormControl fullWidth>
-          <InputLabel>Economic Field Name</InputLabel>
+            <InputLabel>Economic Field Name</InputLabel>
             <Select
               value={econFilter}
               label="Econ"
@@ -505,17 +507,24 @@ export default function Home() {
         Plot
       </Button>
 
-      <LineChart width={1500} height={500} data={data}>
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="name" interval={1} fontSize={"10px"}/>
-        <YAxis />
-        <Tooltip />
-        {data.length > 0 && Object.keys(data[0])
-          .filter(key => key !== "name")
-          .map((key) => (
-            <Line key={key} type="monotone" dataKey={key} stroke={getColor(key)} />
-          ))}
-      </LineChart>
+      {/* Render the line chart for non-holiday data sources */}
+      {source !== "Holidays" && data.length > 0 && (
+        <LineChart width={1500} height={500} data={data}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="name" interval={1} />
+          <YAxis />
+          {Object.keys(data[0])
+            .filter(key => key !== "name")
+            .map((key) => (
+              <Line key={key} type="monotone" dataKey={key} stroke={getColor(key)} />
+            ))}
+        </LineChart>
+      )}
+
+      {/* Render the HolidayLineGraph */}
+      {source === "Holidays" && (
+        <HolidayLineGraph startDate={startCalendarValue} endDate={endCalendarValue} />
+      )}
     </Stack>
   );
 

@@ -14,8 +14,12 @@ app.use(cors());
 app.use(express.json());
 
 // MongoDB connection URI (replace with your own MongoDB URI)
-const mongoURI = `mongodb://${process.env.MONGO_INITDB_ROOT_USERNAME}:${process.env.MONGO_INITDB_ROOT_PASSWORD}@localhost:27017/${process.env.MONGO_DB_NAME}?authSource=admin`;
-console.log(mongoURI)
+//const mongoURI = `mongodb://${process.env.MONGO_INITDB_ROOT_USERNAME}:${process.env.MONGO_INITDB_ROOT_PASSWORD}@localhost:27017/${process.env.MONGO_DB_NAME}?authSource=admin`;
+//const mongoURI = `mongodb://localhost:27017/${process.env.MONGO_DB_NAME}`;
+//const mongoURI = `mongodb://localhost:27017/${process.env.MONGO_INITDB_DATABASE}`;
+const mongoURI = `mongodb://localhost:27017/holiday_data`;
+
+console.log(`test: `+mongoURI)
 
 // Connect to MongoDB using mongoose
 mongoose.connect(mongoURI, {

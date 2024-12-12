@@ -3,7 +3,7 @@ const router = express.Router();
 
 const gdpRoutes = require('./gdp');
 const empRoutes = require('./employee')
-const flightEconRoutes=require('./flightecon');
+const flightEconRoutes=require('./flightEcon');
 
 router.use(gdpRoutes);
 router.use(empRoutes);
