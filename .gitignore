@@ -162,3 +162,12 @@ cython_debug/
 #.idea/
 
 .DS_STORE
+.python-version
+*.csv
+*.zip
+/data
+flight_data/
+employee_data_queries.js
+
+frontend/air-data-analysis/node_modules
+frontend/air-data-analysis/src/app/node_modules
